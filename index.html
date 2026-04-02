@@ -87,8 +87,8 @@ body{font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:
 .filter-control select{width:100%;padding:5px 8px;border:none;font-size:11px;color:#333;background:#fff;cursor:pointer}
 .date-range-group{background:#fff;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.06);padding:5px 8px}
 .date-range-group label{font-size:9px;font-weight:700;color:#666;text-transform:uppercase}
-.date-range-group .date-inputs{display:flex;gap:4px;margin-top:3px}
-.date-range-group input[type="month"]{flex:1;padding:3px 4px;border:1px solid #ddd;border-radius:3px;font-size:10px}
+.date-range-group .date-inputs{display:flex;flex-direction:column;gap:3px;margin-top:3px}
+.date-range-group input[type="month"]{width:100%;padding:3px 4px;border:1px solid #ddd;border-radius:3px;font-size:10px;box-sizing:border-box}
 
 /* Insight cards */
 .insight-card{background:#fff;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.06);padding:6px 8px;border-left:3px solid #1a73e8}
@@ -289,7 +289,7 @@ function enrichRow(o){
   const d=o['Date']||'';
   if(d){const jm=d.match(/Date\((\d+),(\d+),(\d+)\)/);
     if(jm){const y=+jm[1],m=+jm[2];o._date=new Date(y,m,+jm[3]);o._yearMonth=y+'-'+String(m+1).padStart(2,'0')}
-    else{const p=d.split('/');if(p.length===3){const m=+p[0],y=+p[2];o._date=new Date(y,m-1,+p[1]);o._yearMonth=y+'-'+String(m).padStart(2,'0')}}
+    else{const p=d.split('/');if(p.length===3){let m=+p[0],y=+p[2];if(y<100)y+=2000;const dt2=new Date(y,m-1,+p[1]);dt2.setFullYear(y);o._date=dt2;o._yearMonth=y+'-'+String(m).padStart(2,'0')}}
     if(o._date){o._monthLabel=o._date.toLocaleDateString('en-US',{month:'short',year:'2-digit'});o._year=o._date.getFullYear();o._monthNum=o._date.getMonth()+1}}
   o._clientName=o['Client Name']||'';o._seller=o['Seller']||'';o._region=o['Region']||'';o._invoiceType=o['Invoice Type']||'';return o;
 }
