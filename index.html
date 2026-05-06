@@ -67,10 +67,10 @@ body{font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:
 .kpi-red{color:#c5221f}
 
 /* Main grid */
-.main-grid{flex:1;display:grid;grid-template-columns:200px 1fr 1.4fr 1fr;grid-template-rows:1fr 1fr;gap:8px;padding:0 16px 10px;min-height:0;overflow:hidden}
+.main-grid{flex:1;display:grid;grid-template-columns:200px 1fr 1.4fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:8px;padding:0 16px 10px;min-height:0;overflow:hidden}
 
 /* Filter sidebar */
-.filter-sidebar{grid-row:1/3;display:flex;flex-direction:column;gap:6px;overflow-y:auto;padding-right:4px}
+.filter-sidebar{grid-row:1/4;display:flex;flex-direction:column;gap:6px;overflow-y:auto;padding-right:4px}
 .filter-sidebar::-webkit-scrollbar{width:4px}
 .filter-sidebar::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
 .reset-filters-btn{background:#fff;border:1px solid #ddd;border-radius:4px;padding:5px;font-size:10px;color:#555;cursor:pointer;text-align:center}
@@ -108,10 +108,11 @@ body{font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:
 
 /* Grid positions */
 .donut-top{grid-column:2;grid-row:1}
-.donut-bottom{grid-column:2;grid-row:2}
-.monthly-col{grid-column:3;grid-row:1/3}
-.right-top{grid-column:4;grid-row:1;display:flex;flex-direction:column;gap:6px;min-height:0;overflow:hidden}
-.right-bottom{grid-column:4;grid-row:2;min-height:0;overflow:hidden}
+.donut-mid{grid-column:2;grid-row:2}
+.donut-bottom{grid-column:2;grid-row:3}
+.monthly-col{grid-column:3;grid-row:1/4}
+.right-top{grid-column:4;grid-row:1/3;display:flex;flex-direction:column;gap:6px;min-height:0;overflow:hidden}
+.right-bottom{grid-column:4;grid-row:3;min-height:0;overflow:hidden}
 
 /* Invoice buckets */
 .bucket-table{width:100%;border-collapse:collapse;font-size:10px}
@@ -129,7 +130,7 @@ body{font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:
 
 /* Responsive */
 @media(max-width:1200px){.main-grid{grid-template-columns:180px 1fr 1.2fr 1fr}}
-@media(max-width:1024px){html,body{overflow:auto}.main-grid{grid-template-columns:180px 1fr 1fr;grid-template-rows:auto auto auto}.monthly-col{grid-column:2/4;grid-row:3}.right-top,.right-bottom{grid-column:3}}
+@media(max-width:1024px){html,body{overflow:auto}.main-grid{grid-template-columns:180px 1fr 1fr;grid-template-rows:auto auto auto auto}.monthly-col{grid-column:2/4;grid-row:4}.right-top,.right-bottom{grid-column:3}}
 </style>
 </head>
 <body>
@@ -221,7 +222,13 @@ body{font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:
     <div class="chart-wrapper"><canvas id="chart-region"></canvas></div>
   </div>
 
-  <!-- Col 2 Row 2: Revenue by Type -->
+  <!-- Col 2 Row 2: Invoiced From -->
+  <div class="chart-card donut-mid">
+    <h3>Invoiced From <span style="font-weight:400;color:#aaa;font-size:9px">(click to filter)</span></h3>
+    <div class="chart-wrapper"><canvas id="chart-invoiced-from"></canvas></div>
+  </div>
+
+  <!-- Col 2 Row 3: Revenue by Type -->
   <div class="chart-card donut-bottom">
     <h3>Revenue by Type <span style="font-weight:400;color:#aaa;font-size:9px">(click to filter)</span></h3>
     <div class="chart-wrapper"><canvas id="chart-type"></canvas></div>
@@ -372,7 +379,7 @@ function fmtFull(v){return'$'+Math.round(v).toLocaleString('en-US')}
 function fmtPct(v){return(v>=0?'+':'')+v.toFixed(1)+'%'}
 
 // Render all
-function renderAll(){renderKPIs();renderRegionTable();renderRegionDonut();renderTypeDonut();renderMonthlyBar();renderInvoiceBuckets();renderTreemap();renderInsights()}
+function renderAll(){renderKPIs();renderRegionTable();renderRegionDonut();renderInvoicedFromDonut();renderTypeDonut();renderMonthlyBar();renderInvoiceBuckets();renderTreemap();renderInsights()}
 
 // ===== KPIs =====
 function renderKPIs(){
@@ -482,6 +489,7 @@ function renderRegionTable(){
 // ===== Charts =====
 const RC=['#00bcd4','#4caf50','#ff9800','#e91e63','#3f51b5','#9c27b0','#795548'];
 const TC=['#1a73e8','#ff9800','#fbbc04','#00bcd4','#e91e63'];
+const IFC=['#6a1b9a','#00897b','#ef6c00','#1565c0','#c62828','#2e7d32','#ad1457'];
 
 function renderRegionDonut(){
   const rs={};filteredData.forEach(r=>{if(r._region)rs[r._region]=(rs[r._region]||0)+r._sales});
@@ -505,6 +513,18 @@ function renderTypeDonut(){
       onClick(evt,elements){if(elements.length){setChartFilter('invoiceType',s[elements[0].index][0])}},
       plugins:{legend:{position:'right',labels:{font:{size:10},padding:6,boxWidth:10}},
         tooltip:{callbacks:{label:c=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);return c.label+': '+c.parsed.toLocaleString()+' ('+((c.parsed/t)*100).toFixed(1)+'%)'}}}}}})
+}
+
+function renderInvoicedFromDonut(){
+  const ic={};filteredData.forEach(r=>{if(r._invoicedFrom)ic[r._invoicedFrom]=(ic[r._invoicedFrom]||0)+r._sales});
+  const s=Object.entries(ic).sort((a,b)=>b[1]-a[1]);
+  if(chartInvoicedFrom)chartInvoicedFrom.destroy();
+  chartInvoicedFrom=new Chart(document.getElementById('chart-invoiced-from'),{type:'doughnut',
+    data:{labels:s.map(e=>e[0]),datasets:[{data:s.map(e=>e[1]),backgroundColor:IFC,borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      onClick(evt,elements){if(elements.length){setChartFilter('invoicedFrom',s[elements[0].index][0])}},
+      plugins:{legend:{position:'right',labels:{font:{size:10},padding:6,boxWidth:10}},
+        tooltip:{callbacks:{label:c=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);return c.label+': '+fmtFull(c.parsed)+' ('+((c.parsed/t)*100).toFixed(1)+'%)'}}}}}})
 }
 
 function renderMonthlyBar(){
