@@ -298,7 +298,7 @@ function enrichRow(o){
     if(jm){const y=+jm[1],m=+jm[2];o._date=new Date(y,m,+jm[3]);o._yearMonth=y+'-'+String(m+1).padStart(2,'0')}
     else{const p=d.split('/');if(p.length===3){let m=+p[0],y=+p[2];if(y<100)y+=2000;const dt2=new Date(y,m-1,+p[1]);dt2.setFullYear(y);o._date=dt2;o._yearMonth=y+'-'+String(m).padStart(2,'0')}}
     if(o._date){o._monthLabel=o._date.toLocaleDateString('en-US',{month:'short',year:'2-digit'});o._year=o._date.getFullYear();o._monthNum=o._date.getMonth()+1}}
-  o._clientName=o['Client Name']||'';o._seller=o['Seller']||'';o._region=o['Region']||'';o._invoiceType=o['Invoice Type']||'';return o;
+  o._clientName=o['Client Name']||'';o._seller=o['Seller']||'';o._region=o['Region']||'';o._invoiceType=o['Invoice Type']||'';o._invoicedFrom=o['Invoiced from:']||o['Invoiced From']||'';return o;
 }
 
 function parseRows(csv){if(csv.length<2)return[];const h=csv[0].map(x=>x.trim()),d=[];for(let i=1;i<csv.length;i++){const r=csv[i],o={};h.forEach((k,j)=>{if(k)o[k]=(r[j]||'').trim()});if(o['Client Name']||o['Sales'])d.push(enrichRow(o))}return d}
