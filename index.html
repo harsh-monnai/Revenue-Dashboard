@@ -260,7 +260,7 @@ const CONFIG={sheetId:'1Ai6EHhwwJTiXBwfLCyKanACg_h1t1VtNejY7Jjc1blk',actualsTab:
 const CSV_URL='https://docs.google.com/spreadsheets/d/'+CONFIG.sheetId+'/gviz/tq?tqx=out:csv&sheet='+encodeURIComponent(CONFIG.actualsTab);
 
 let rawData=[],filteredData=[],currentMode=localStorage.getItem('dashboardMode')||'standard';
-let chartRegion=null,chartType=null,chartMonthly=null;
+let chartRegion=null,chartType=null,chartMonthly=null,chartInvoicedFrom=null;
 
 /* ===== Chart-level cross-filters ===== */
 let chartFilters={region:null,invoiceType:null,month:null,client:null};
